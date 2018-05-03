@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="YK chatbot.jnlp">
+  <information>
+    <title>YK chatbot</title>
+    <vendor>User</vendor>
+    <description>null</description>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+    <jar href="lib\stanford-postagger.jar" size="3669310" download="eager" />
+  </resources>
+  <application-desc main-class="yk.chatbot.YKChatbot"  name="YK chatbot" >
+  </application-desc>
+  <update check="always"/>
+</jnlp>
