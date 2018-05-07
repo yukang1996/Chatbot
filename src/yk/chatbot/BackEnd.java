@@ -132,25 +132,7 @@ public class BackEnd {
     
     public ArrayList RemoveStopWords(String sentence){
         ArrayList notStopWords = new ArrayList();
-        String []stopWords = {"a","about","above","across","after","afterwards","again","against","all","almost","alone","along","already","also",
-            "although","always","am","among","amongst","amoungst","amount","an","and","another","any","anyhow","anyone","anything","anyway",
-            "anywhere","are","around","as","at","back","be","became","because","become","becomes","becoming","been","before","beforehand","behind",
-            "being","below","beside","besides","between","beyond","bill","both","bottom","but","by","call","can","cannot","cant","co","computer",
-            "con","could","couldnt","cry","de","describe","detail","do","done","down","due","during","each","eg","eight","either","eleven","else",
-            "elsewhere","empty","enough","etc","even","ever","every","everyone","everything","everywhere","except","few","fifteen","fify","fill",
-            "find","fire","first","five","for","former","formerly","forty","found","four","front","full","further","get","give","go","had",
-            "has","hasnt","have","he","hence","her","here","hereafter","hereby","herein","hereupon","hers","herse","him","himse","his","how",
-            "however","hundred","i","ie","if","in","inc","indeed","interest","into","is","it","its","itse","keep","last","latter","latterly",
-             "least","less","ltd","made","many","may","me","meanwhile","might","mill","mine","more","moreover","most","mostly","move","much","must",
-             "my","myse","namely","neither","never","nevertheless","next","nine","nobody","none","noone","nor","nothing","now",
-            "nowhere","of","off","often","on","once","one","only","onto","or","other","others","otherwise","our","ours","ourselves","out","over","own",
-            "part","per","perhaps","please","put","rather","re","same","see","seem","seemed","seeming","seems","serious","several","she","should","show",
-            "side","since","sincere","six","sixty","so","some","somehow","someone","something","sometime","sometimes","somewhere","still","such","system",
-            "take","ten","than","that","the","their","them","themselves","then","thence","there","thereafter","thereby","therefore","therein","thereupon",
-            "these","they","thick","third","this","those","though","three","through","throughout","thru","thus","together","too","top","toward",
-            "towards","twelve","twenty","two","un","under","until","up","upon","us","very","via","was","we","well","were","whatever","when",
-            "whence","whenever","whereafter","whereas","whereby","wherein","whereupon","wherever","whether","which","while","whither","who",
-            "whoever","whole","whom","whose","will","with","within","without","would","yet","you","your","yours","yourself","yourselves"};
+        String []stopWords = {"a","an","the","do","does"};
         String array[] = sentence.split(" ");
         
         for (int i = 0; i < array.length; i++) {
@@ -249,19 +231,40 @@ public class BackEnd {
             tf[i] += Notbonus;
             if(tf[i] > max){
                 holder = i-1;
-                max = tf[i-1];
+                max = tf[i];
             }
+            
+            
+           
         }
         String finalreply = "";
+        ArrayList <Integer>sameArray = new ArrayList<>();
         if(max == Double.NaN || max == -1){
             finalreply = "Sry, YKChatbot don't understand.";
         }
         else{
             try{
                 for (int i = 0; i < array.length; i+=2) {
-                System.out.println(temp[i]+" = "+tf[i+1]);    
+                    System.out.println(temp[i]+" = "+tf[i+1]);
+                    System.out.println("maaxxxxx: "+max);
+                    if(tf[i+1] == max && max >0){
+                        System.out.println("Me too: "+temp[i]);
+                        sameArray.add(i);
+                    }
+                    System.out.println("array contain: "+sameArray.toString());
                 }
-                finalreply = BreakComponent(keyWords,wH,temp[holder],temp[holder+1]);
+                String final2reply= "";
+                for (int i = 0; i < sameArray.size(); i++) {
+                    System.out.println("samearray index: "+i);
+                    System.out.println("xxxxxxxxxxxxxxxxxxxxxxx");
+                    System.out.println(temp[sameArray.get(i)]);
+                    System.out.println(temp[sameArray.get(i)+1]);
+                    final2reply += BreakComponent(keyWords,wH,temp[sameArray.get(i)],temp[sameArray.get(i)+1]).trim();
+                    if(i <sameArray.size()-1){
+                        final2reply += " and ";
+                    }
+                }
+                finalreply = final2reply;
                
             }
             catch(Exception e){
@@ -276,7 +279,7 @@ public class BackEnd {
     
     public String changeInU(String reply){
         String array[] = reply.split(" ");
-        String Iwords[] = {"i","me","my","mine","am"};
+        String Iwords[] = {"me","i","my","mine","am"};
         String Uwords[] = {"you","you","your","yours","are"};
         String changedReply = "";
         for (int i = 0; i < array.length; i++) {
@@ -485,8 +488,9 @@ public class BackEnd {
                 }
             }
         }
+        boolean noWhy = false;
         System.out.println("WHyyyyyyyy");
-            String whyWords[] = {"because","as","due to"};
+            String whyWords[] = {"because","as","due to","for"};
             Stack <String>st2 = new Stack<>();
             for (int i = 0; i < whyWords.length; i++) {
                 int index = processReply.indexOf(whyWords[i]);
@@ -502,11 +506,22 @@ public class BackEnd {
                         System.out.println("why: "+why);
                         why += st2.pop()+" ";
                     }
+                    System.out.println("whyyyyyyyyyyyyyyyyyyyyy found la");
+                    noWhy = false;
                     break;
+                }
+                else{
+                    System.out.println(whyWords[i]+" not found");
+                    why = "";
+                    noWhy = true;
                 }
             }
             String whyReply = why;
+            
         if(wH.equalsIgnoreCase("why")){
+            if(whyReply.equalsIgnoreCase("")){
+                whyReply ="Sry, YKChatbot don't understand.";
+            }
             finalReply = whyReply;
         }
         
@@ -544,31 +559,37 @@ public class BackEnd {
                 if(index > -1){
                     String temp[] = processReply.substring(index).split(" ");
                     String erehw[] = reply.split(" ");
-                    System.out.println(erehw.length);
+                    System.out.println("temppppl: "+temp.length);
+                    System.out.println("lengtthhhh "+erehw.length);
                     for (int j = erehw.length-1; j >= erehw.length-temp.length ; j--) {
                         st.add(erehw[j]);
                         System.out.println(st.toString());
                     }
-                    int tempI = st.size();
-                    for (int j = 0; j < tempI ; j++) {
-                        System.out.println("where: "+where);
-                        where += st.pop()+" ";
-                    }
+                    
                     break;
                 }
             }
+            int tempI = st.size();
+            String wherewhere[] = new String[st.size()];
+            System.out.println("tempI: "+tempI);
+                for (int j = 0; j < tempI ; j++) {
+                    wherewhere[j] = st.pop();
+            }
             String whywhy[] = whyReply.split(" ");
-            String wherewhere[] = where.split(" ");
             String whereFinal = "";
-            for (int i = 0; i < whywhy.length; i++) {
+            System.out.println("why : "+whyReply);
+            System.out.println("whywhy length: "+whywhy.length);
+            for (int i = 0; i < wherewhere.length; i++) {
                 if(whywhy[0].equalsIgnoreCase(wherewhere[i])){
+                    System.out.println("break ?");
                     break;
                 }
                 else{
+                    System.out.println("fffffffff "+wherewhere[i]);
                     whereFinal += wherewhere[i] +" ";
                 }
             }
-            
+            System.out.println("dddddddddddd");
             finalReply = whereFinal;
         }
              
@@ -606,10 +627,14 @@ public class BackEnd {
 //        for (int i = 0; i < index; i++) {
 //            who += words[i];
 //        }
+        if(index == -1){
+            index = 1;
+        }
         return index;
     }
 
     void ForgetEverything() throws FileNotFoundException {
+        this.emotion = "neutral";
         PrintWriter pw = new PrintWriter(".\\CBMemory.txt");
         pw.close();
     }
@@ -622,13 +647,7 @@ public class BackEnd {
         this.QnegateDetected = toggle;
         
     }
-    public boolean checkRnegate(String sentence){
-        boolean toggle = false;
-        if(sentence.indexOf("not")>-1 || sentence.indexOf("no")>-1){
-            toggle = true;
-        }
-        return toggle;
-    }
+    
     
         
     }

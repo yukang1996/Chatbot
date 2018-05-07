@@ -140,3 +140,7 @@ write
 play
 chase
 want
+love
+kill
+scold
+punish

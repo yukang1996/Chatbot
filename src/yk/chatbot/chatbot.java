@@ -252,6 +252,11 @@ public class chatbot extends javax.swing.JFrame implements KeyListener {
         BackEnd be = new BackEnd();
         try {
             be.ForgetEverything();
+            ImageIcon neuIcon = new ImageIcon("neutral.png");
+            Image image3 = neuIcon.getImage(); // transform it 
+            Image newimg3 = image3.getScaledInstance(70, 70,  java.awt.Image.SCALE_SMOOTH);
+            ImageIcon neu = new ImageIcon(newimg3);
+            jLabel2.setIcon(neu);
             JOptionPane.showMessageDialog(rootPane, "YKChatbot have forget everything..."); 
             jTextArea1.setText("");
             jLabel2.revalidate();
