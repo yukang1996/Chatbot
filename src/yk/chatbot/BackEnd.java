@@ -232,10 +232,11 @@ public class BackEnd {
         for (int i = 1; i < array.length; i+=2) {
             for (int j = 0; j < this.SnegateDetected.size(); j++) {
                 if(i == this.SnegateDetected.get(j) && this.QnegateDetected == true){
-                    System.out.println("not bonus = 1");
+                    System.out.println("qnegate: "+this.QnegateDetected);
                     Notbonus = 1;
                 }
                 else if(i == this.SnegateDetected.get(j) && this.QnegateDetected == false){
+                    System.out.println("qnegate: "+this.QnegateDetected);
                     Notbonus = -1;
                 }
                 else{
@@ -615,7 +616,7 @@ public class BackEnd {
     
     public void checkQnegate(String sentence){
         boolean toggle = false;
-        if(sentence.indexOf("not")>-1 || sentence.indexOf("no")>-1){
+        if(sentence.indexOf("not ")>-1 || sentence.indexOf("no ")>-1){
             toggle = true;
         }
         this.QnegateDetected = toggle;
