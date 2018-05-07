@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import static java.lang.Math.log;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Scanner;
 import java.util.Stack;
 
@@ -29,6 +30,8 @@ public class BackEnd {
     private String sentence;
     private String emotion = "neutral";
     private String[][] lemma;
+    private boolean QnegateDetected = false;
+    private ArrayList<Integer> SnegateDetected = new ArrayList<>(); 
 
     
     public ArrayList Initialise() throws FileNotFoundException{
@@ -57,9 +60,6 @@ public class BackEnd {
     }
     
     public String GetSentenceType(String sentence) throws FileNotFoundException{
-        //System.out.println(this.Emotion(sentence));
-        //ML m = new ML();
-        //m.Training_set(sentence);
         String type;
         if(sentence.contains("?")){
             type = "questions";
@@ -85,8 +85,10 @@ public class BackEnd {
             sentence = this.RemoveSymbols(sentence);
             String lemSentence = this.Lemmatize(sentence);
             System.out.println("lemSeeeeeeeeeeee: "+lemSentence);
+            this.checkQnegate(sentence);
             ArrayList keyWords = this.RemoveStopWords(lemSentence);
-            reply = PredictReply(al,keyWords);
+            String wH = checkWH(sentence);
+            reply = PredictReply(wH,al,keyWords);
             
         }
         else if(type.equalsIgnoreCase("calculator")){
@@ -99,7 +101,6 @@ public class BackEnd {
             System.out.println("Statement / Exclamation");
             this.emotion = this.emotionPrediction(array);
             String lemSentence =this.Lemmatize(sentence);
-            System.out.println("1231321321321321321");
             System.out.println(lemSentence);
             System.out.println(this.emotion);
             al.add(sentence);
@@ -137,7 +138,7 @@ public class BackEnd {
             "being","below","beside","besides","between","beyond","bill","both","bottom","but","by","call","can","cannot","cant","co","computer",
             "con","could","couldnt","cry","de","describe","detail","do","done","down","due","during","each","eg","eight","either","eleven","else",
             "elsewhere","empty","enough","etc","even","ever","every","everyone","everything","everywhere","except","few","fifteen","fify","fill",
-            "find","fire","first","five","for","former","formerly","forty","found","four","from","front","full","further","get","give","go","had",
+            "find","fire","first","five","for","former","formerly","forty","found","four","front","full","further","get","give","go","had",
             "has","hasnt","have","he","hence","her","here","hereafter","hereby","herein","hereupon","hers","herse","him","himse","his","how",
             "however","hundred","i","ie","if","in","inc","indeed","interest","into","is","it","its","itse","keep","last","latter","latterly",
              "least","less","ltd","made","many","may","me","meanwhile","might","mill","mine","more","moreover","most","mostly","move","much","must",
@@ -146,10 +147,10 @@ public class BackEnd {
             "part","per","perhaps","please","put","rather","re","same","see","seem","seemed","seeming","seems","serious","several","she","should","show",
             "side","since","sincere","six","sixty","so","some","somehow","someone","something","sometime","sometimes","somewhere","still","such","system",
             "take","ten","than","that","the","their","them","themselves","then","thence","there","thereafter","thereby","therefore","therein","thereupon",
-            "these","they","thick","third","this","those","though","three","through","throughout","thru","thus","to","together","too","top","toward",
-            "towards","twelve","twenty","two","un","under","until","up","upon","us","very","via","was","we","well","were","what","whatever","when",
-            "whence","whenever","where","whereafter","whereas","whereby","wherein","whereupon","wherever","whether","which","while","whither","who",
-            "whoever","whole","whom","whose","why","will","with","within","without","would","yet","you","your","yours","yourself","yourselves"};
+            "these","they","thick","third","this","those","though","three","through","throughout","thru","thus","together","too","top","toward",
+            "towards","twelve","twenty","two","un","under","until","up","upon","us","very","via","was","we","well","were","whatever","when",
+            "whence","whenever","whereafter","whereas","whereby","wherein","whereupon","wherever","whether","which","while","whither","who",
+            "whoever","whole","whom","whose","will","with","within","without","would","yet","you","your","yours","yourself","yourselves"};
         String array[] = sentence.split(" ");
         
         for (int i = 0; i < array.length; i++) {
@@ -170,7 +171,7 @@ public class BackEnd {
         return notStopWords;
     }
     //check 1 print 0
-    private String PredictReply(ArrayList al,ArrayList keyWords) {
+    private String PredictReply(String wH,ArrayList al,ArrayList keyWords) throws FileNotFoundException {
         //transfer memory arraylist to normal array for split
         String array[][] = new String[al.size()][];
         String temp [] = new String [al.size()];
@@ -197,9 +198,16 @@ public class BackEnd {
                         containTerm = true;
                         break;
                     }
+                    
                     else{
                     }
                 }
+                System.out.println(array[i][j]+" vs ");
+                if(array[i][j].equalsIgnoreCase("not") || array[i][j].equalsIgnoreCase("no")){
+                        //aaaaaaaaaaaaaaaaaaaaaaaaa
+                        this.SnegateDetected.add(i);
+                        System.out.println("Not detected in "+array[i]);
+                    }
                 if(containTerm == true){
                     total_sentence_t++;   
                 }
@@ -216,34 +224,59 @@ public class BackEnd {
         }
         double tf[] = new double [array.length];
         System.out.println(total_sentence+" / "+total_sentence_t);
-        double idf = log(total_sentence+1/ total_sentence_t);
-        System.out.println(idf);
+        double idf = log(total_sentence/ total_sentence_t+1);
+        System.out.println("xxxxx"+idf);
         double max = -1;
         int holder = 0;
+        double Notbonus = 0;
         for (int i = 1; i < array.length; i+=2) {
+            for (int j = 0; j < this.SnegateDetected.size(); j++) {
+                if(i == this.SnegateDetected.get(j) && this.QnegateDetected == true){
+                    System.out.println("not bonus = 1");
+                    Notbonus = 1;
+                }
+                else if(i == this.SnegateDetected.get(j) && this.QnegateDetected == false){
+                    Notbonus = -1;
+                }
+                else{
+                    Notbonus = 0;
+                }
+                
+            }
             tf[i] = word_freq_t[i] / total_word_sentence[i];
             tf[i] = tf[i] * (idf+1);
+            tf[i] += Notbonus;
             if(tf[i] > max){
                 holder = i-1;
                 max = tf[i-1];
             }
         }
-        
-       
-        
-        
-        for (int i = 0; i < array.length; i+=2) {
-            System.out.println(temp[i]+" = "+tf[i+1]);    
+        String finalreply = "";
+        if(max == Double.NaN || max == -1){
+            finalreply = "Sry, YKChatbot don't understand.";
         }
-        
-        return temp[holder];
+        else{
+            try{
+                for (int i = 0; i < array.length; i+=2) {
+                System.out.println(temp[i]+" = "+tf[i+1]);    
+                }
+                finalreply = BreakComponent(keyWords,wH,temp[holder],temp[holder+1]);
+               
+            }
+            catch(Exception e){
+                finalreply = "Sry, YKChatbot don't understand.";
+            }
+            
+
+        }
+        return finalreply;
     }
 
     
     public String changeInU(String reply){
         String array[] = reply.split(" ");
-        String Iwords[] = {"i","me","my","mine"};
-        String Uwords[] = {"you","you","your","yours"};
+        String Iwords[] = {"i","me","my","mine","am"};
+        String Uwords[] = {"you","you","your","yours","are"};
         String changedReply = "";
         for (int i = 0; i < array.length; i++) {
             for (int j = 0; j < Iwords.length; j++) {
@@ -346,11 +379,7 @@ public class BackEnd {
         return emotion;
     }
     
-    public void PredictPOS() throws FileNotFoundException{
-        
-        CFG cfg = new CFG(this.sentence);
-        
-    }
+    
     
     public String[][] initLemmatization() throws FileNotFoundException{
         System.out.println("lemmmmmmmmmmmmaaaaaaaa");
@@ -389,6 +418,217 @@ public class BackEnd {
         System.out.println("lemma "+lemmaWord);
         return lemmaWord;
     }    
+
+    private String checkWH(String sentence) {
+        String wH = "";
+        String keyWords[] = sentence.split(" ");
+        for (int i = 0; i < keyWords.length; i++) {
+            if(keyWords[i].equalsIgnoreCase("what")){
+                wH = "what";
+                break;
+            }
+            else if(keyWords[i].equalsIgnoreCase("who")){
+                wH = "who";
+                break;
+            }
+            else if(keyWords[i].equalsIgnoreCase("where")){
+                wH = "where";
+                break;
+            }
+            else if(keyWords[i].equalsIgnoreCase("why")){
+                wH = "why";
+                break;
+            }
+            else{
+                wH = "";
+            }
+        }
+        System.out.println("whwhwhwhwhwhwwhwhwhwhwhwhwhw: "+wH);
+        return wH;
+    }
+
+    private String BreakComponent(ArrayList keyWords,String wH, String reply,String processReply) throws FileNotFoundException {
+        String finalReply = "";
+        String who = "";
+        String what = "";
+        String why = "";
+        String where = "";
+        System.out.println(processReply);
+        String words[] = processReply.split(" ");
+        String Showwords[] = reply.split(" ");
+        int verbAtLocation = checkVerb(words);
+        System.out.println("index: "+verbAtLocation);
+        //what,who,where,why
+        for (int i = 0; i < verbAtLocation; i++) {
+//            System.out.println("words: "+words[i]);
+            //negate
+            if(Showwords[i].equalsIgnoreCase("not") || Showwords[i].equalsIgnoreCase("no")){
+                System.out.println("Not/No detected.Throwing...");
+            }
+            else{
+                who += Showwords[i]+" ";
+            }
+            
+        }
+        for (int i = verbAtLocation; i < Showwords.length; i++) {
+//            System.out.println("words: "+words[i]);
+            what += Showwords[i]+" ";
+        }
+        if(wH.equalsIgnoreCase("who")){
+            System.out.println("WHooooooo");
+            finalReply = who;
+            for (int i = 0; i < keyWords.size(); i++) {
+                if(finalReply.contains((String) keyWords.get(i))){
+                    System.out.println("keywords same, change to wat");
+                    wH = "what";
+                }
+            }
+        }
+        System.out.println("WHyyyyyyyy");
+            String whyWords[] = {"because","as","due to"};
+            Stack <String>st2 = new Stack<>();
+            for (int i = 0; i < whyWords.length; i++) {
+                int index = processReply.indexOf(whyWords[i]);
+                if(index > -1){
+                    String temp[] = processReply.substring(index).split(" ");
+                    String yhw[] = reply.split(" ");
+                    for (int j = yhw.length-1; j >= yhw.length-temp.length; j--) {
+                        st2.add(yhw[j]);
+                        System.out.println(st2.toString());
+                    }
+                    int tempI = st2.size();
+                    for (int j = 0; j < tempI; j++) {
+                        System.out.println("why: "+why);
+                        why += st2.pop()+" ";
+                    }
+                    break;
+                }
+            }
+            String whyReply = why;
+        if(wH.equalsIgnoreCase("why")){
+            finalReply = whyReply;
+        }
+        
+        if(wH.equalsIgnoreCase("where")){
+            System.out.println("WHereeeeee");
+            String whereDict[] = {"at","in","under","above","from","to"};
+            ArrayList<String> whereList = new ArrayList<>();
+            boolean ending = false;
+            for (int i = 0; i < keyWords.size(); i++) {
+                for (int j = 0; j < whereDict.length; j++) {
+                    System.out.println(keyWords.get(i)+" vs "+whereDict[j]);
+                    if(keyWords.get(i).equals(whereDict[j])){
+                        whereList.add((String) keyWords.get(i));
+                        ending = true;
+                        break;
+                    }
+                    
+                }
+                if(ending == true){
+                    break;
+                }
+            }
+            if(ending == false){
+                Collections.addAll(whereList,whereDict);
+                
+            }
+            for (int i = 0; i < whereList.size(); i++) {
+                    System.out.println("!!! "+whereList.get(i));
+            }
+            Stack <String>st = new Stack<>();
+            for (int i = 0; i < whereList.size(); i++) {
+                System.out.println(whereList.get(i));
+                int index = processReply.indexOf(whereList.get(i));
+                System.out.println("indexxxx: "+index);
+                if(index > -1){
+                    String temp[] = processReply.substring(index).split(" ");
+                    String erehw[] = reply.split(" ");
+                    System.out.println(erehw.length);
+                    for (int j = erehw.length-1; j >= erehw.length-temp.length ; j--) {
+                        st.add(erehw[j]);
+                        System.out.println(st.toString());
+                    }
+                    int tempI = st.size();
+                    for (int j = 0; j < tempI ; j++) {
+                        System.out.println("where: "+where);
+                        where += st.pop()+" ";
+                    }
+                    break;
+                }
+            }
+            String whywhy[] = whyReply.split(" ");
+            String wherewhere[] = where.split(" ");
+            String whereFinal = "";
+            for (int i = 0; i < whywhy.length; i++) {
+                if(whywhy[0].equalsIgnoreCase(wherewhere[i])){
+                    break;
+                }
+                else{
+                    whereFinal += wherewhere[i] +" ";
+                }
+            }
+            
+            finalReply = whereFinal;
+        }
+             
+        
+        if(wH.equalsIgnoreCase("what")){
+            System.out.println("WHattttttt");
+            finalReply = what;
+        }
+        
+        System.out.println("final: "+finalReply);
+        return finalReply;
+    }
+
+    private int checkVerb(String[] words) throws FileNotFoundException {
+        FileInputStream fis = new FileInputStream(".\\pos_VERB.txt");
+        Scanner n = new Scanner(fis);
+        String who = "";
+        ArrayList<String> al = new ArrayList<>();
+        while(n.hasNext()){
+            al.add(n.nextLine());
+        }
+        System.out.println("verb contain: "+al.toString());
+        int index = -1;
+        wordCount:
+            for (int i = 0; i < words.length; i++) {
+                for (int j = 0; j < al.size(); j++) {
+                    if(words[i].equalsIgnoreCase(al.get(j))){
+                        System.out.println("index "+i+" found");
+                        index = i;
+                        break wordCount;
+                        //break
+                    }
+                }
+            }
+//        for (int i = 0; i < index; i++) {
+//            who += words[i];
+//        }
+        return index;
+    }
+
+    void ForgetEverything() throws FileNotFoundException {
+        PrintWriter pw = new PrintWriter(".\\CBMemory.txt");
+        pw.close();
+    }
+    
+    public void checkQnegate(String sentence){
+        boolean toggle = false;
+        if(sentence.indexOf("not")>-1 || sentence.indexOf("no")>-1){
+            toggle = true;
+        }
+        this.QnegateDetected = toggle;
+        
+    }
+    public boolean checkRnegate(String sentence){
+        boolean toggle = false;
+        if(sentence.indexOf("not")>-1 || sentence.indexOf("no")>-1){
+            toggle = true;
+        }
+        return toggle;
+    }
+    
         
     }
         
