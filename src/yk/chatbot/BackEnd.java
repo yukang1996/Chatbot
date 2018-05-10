@@ -132,7 +132,7 @@ public class BackEnd {
     
     public ArrayList RemoveStopWords(String sentence){
         ArrayList notStopWords = new ArrayList();
-        String []stopWords = {"a","an","the","do","does"};
+        String []stopWords = {"a","an","the","do","does","did"};
         String array[] = sentence.split(" ");
         
         for (int i = 0; i < array.length; i++) {
@@ -239,26 +239,20 @@ public class BackEnd {
         }
         String finalreply = "";
         ArrayList <Integer>sameArray = new ArrayList<>();
-        if(max == Double.NaN || max == -1){
+        if(max == Double.NaN || (max < 0 )){
             finalreply = "Sry, YKChatbot don't understand.";
         }
         else{
             try{
                 for (int i = 0; i < array.length; i+=2) {
                     System.out.println(temp[i]+" = "+tf[i+1]);
-                    System.out.println("maaxxxxx: "+max);
                     if(tf[i+1] == max && max >0){
                         System.out.println("Me too: "+temp[i]);
                         sameArray.add(i);
                     }
-                    System.out.println("array contain: "+sameArray.toString());
                 }
                 String final2reply= "";
                 for (int i = 0; i < sameArray.size(); i++) {
-                    System.out.println("samearray index: "+i);
-                    System.out.println("xxxxxxxxxxxxxxxxxxxxxxx");
-                    System.out.println(temp[sameArray.get(i)]);
-                    System.out.println(temp[sameArray.get(i)+1]);
                     final2reply += BreakComponent(keyWords,wH,temp[sameArray.get(i)],temp[sameArray.get(i)+1]).trim();
                     if(i <sameArray.size()-1){
                         final2reply += " and ";
@@ -447,7 +441,6 @@ public class BackEnd {
                 wH = "";
             }
         }
-        System.out.println("whwhwhwhwhwhwwhwhwhwhwhwhwhw: "+wH);
         return wH;
     }
 
@@ -462,6 +455,7 @@ public class BackEnd {
         String Showwords[] = reply.split(" ");
         int verbAtLocation = checkVerb(words);
         System.out.println("index: "+verbAtLocation);
+        System.out.println("verb: "+Showwords[verbAtLocation]);
         //what,who,where,why
         for (int i = 0; i < verbAtLocation; i++) {
 //            System.out.println("words: "+words[i]);
@@ -490,10 +484,12 @@ public class BackEnd {
         }
         boolean noWhy = false;
         System.out.println("WHyyyyyyyy");
-            String whyWords[] = {"because","as","due to","for"};
+            String whyWords[] = {" because "," as "," due to "," for "};
             Stack <String>st2 = new Stack<>();
             for (int i = 0; i < whyWords.length; i++) {
                 int index = processReply.indexOf(whyWords[i]);
+                System.out.println("index yy: "+index );
+                
                 if(index > -1){
                     String temp[] = processReply.substring(index).split(" ");
                     String yhw[] = reply.split(" ");
@@ -506,7 +502,7 @@ public class BackEnd {
                         System.out.println("why: "+why);
                         why += st2.pop()+" ";
                     }
-                    System.out.println("whyyyyyyyyyyyyyyyyyyyyy found la");
+                    System.out.println(" whyyyyyyyyyyyyyyyyyyyyy found la");
                     noWhy = false;
                     break;
                 }
@@ -581,7 +577,6 @@ public class BackEnd {
             System.out.println("whywhy length: "+whywhy.length);
             for (int i = 0; i < wherewhere.length; i++) {
                 if(whywhy[0].equalsIgnoreCase(wherewhere[i])){
-                    System.out.println("break ?");
                     break;
                 }
                 else{
@@ -589,7 +584,6 @@ public class BackEnd {
                     whereFinal += wherewhere[i] +" ";
                 }
             }
-            System.out.println("dddddddddddd");
             finalReply = whereFinal;
         }
              

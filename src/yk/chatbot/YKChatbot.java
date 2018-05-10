@@ -15,7 +15,7 @@ import javax.swing.JApplet;
 /**
  *
  * @author User
- */
+ */ 
 public class YKChatbot extends JApplet {
     
     public static void main(String[] args) {
