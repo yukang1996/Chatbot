@@ -112,7 +112,7 @@ public class BackEnd {
             
             pw.close();
             
-            reply = "Thank you!";
+            reply = "Noted!";
         }
         reply = this.changeInU(reply);
         return reply;
@@ -213,10 +213,12 @@ public class BackEnd {
         double Notbonus = 0;
         for (int i = 1; i < array.length; i+=2) {
             for (int j = 0; j < this.SnegateDetected.size(); j++) {
+                //statement gt not, question gt not +1
                 if(i == this.SnegateDetected.get(j) && this.QnegateDetected == true){
                     System.out.println("qnegate: "+this.QnegateDetected);
                     Notbonus = 1;
                 }
+                //statement go not, question no not -1
                 else if(i == this.SnegateDetected.get(j) && this.QnegateDetected == false){
                     System.out.println("qnegate: "+this.QnegateDetected);
                     Notbonus = -1;
@@ -237,9 +239,14 @@ public class BackEnd {
             
            
         }
+        
         String finalreply = "";
         ArrayList <Integer>sameArray = new ArrayList<>();
-        if(max == Double.NaN || (max < 0 )){
+        //threshold ?
+        double threshold = 0.1;
+        System.out.println(max < threshold);
+        if(max == Double.NaN || (max < threshold)){
+            System.out.println("sad case");
             finalreply = "Sry, YKChatbot don't understand.";
         }
         else{
@@ -451,6 +458,10 @@ public class BackEnd {
         String why = "";
         String where = "";
         System.out.println(processReply);
+        System.out.println("Show keyword");
+        for (int i = 0; i < keyWords.size(); i++) {
+            System.out.println(keyWords.get(i));
+        }
         String words[] = processReply.split(" ");
         String Showwords[] = reply.split(" ");
         int verbAtLocation = checkVerb(words);
@@ -493,7 +504,11 @@ public class BackEnd {
                 if(index > -1){
                     String temp[] = processReply.substring(index).split(" ");
                     String yhw[] = reply.split(" ");
-                    for (int j = yhw.length-1; j >= yhw.length-temp.length; j--) {
+                    for (int j = 0; j < temp.length; j++) {
+                        System.out.println("temp: "+temp[j]);
+                        System.out.println("yhw: "+yhw[j]);
+                    }
+                    for (int j = yhw.length-1; j > yhw.length-temp.length; j--) {
                         st2.add(yhw[j]);
                         System.out.println(st2.toString());
                     }
@@ -523,7 +538,7 @@ public class BackEnd {
         
         if(wH.equalsIgnoreCase("where")){
             System.out.println("WHereeeeee");
-            String whereDict[] = {"at","in","under","above","from","to"};
+            String whereDict[] = {"at","in","under","above","from","to","under","behind","on"};
             ArrayList<String> whereList = new ArrayList<>();
             boolean ending = false;
             for (int i = 0; i < keyWords.size(); i++) {
@@ -593,6 +608,7 @@ public class BackEnd {
             finalReply = what;
         }
         
+            
         System.out.println("final: "+finalReply);
         return finalReply;
     }
