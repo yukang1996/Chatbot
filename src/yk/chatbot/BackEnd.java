@@ -132,7 +132,7 @@ public class BackEnd {
     
     public ArrayList RemoveStopWords(String sentence){
         ArrayList notStopWords = new ArrayList();
-        String []stopWords = {"a","an","the","do","does","did"};
+        String []stopWords = {"a","an","the","do","does","did","am","be"};
         String array[] = sentence.split(" ");
         
         for (int i = 0; i < array.length; i++) {
@@ -166,6 +166,15 @@ public class BackEnd {
             temp[i] = (String) al.get(i);
             array[i] = temp[i].split(" ");
         }
+        System.out.println("zzzzzzzzzzzzzzzzzzzzzzzzz");
+        for (int i = 0; i < al.size(); i++) {
+            System.out.println(al.get(i));
+        }
+        System.out.println("zzzzzzzzzzzzzzzzzzzzzzzz");
+        for (int i = 0; i < keyWords.size(); i++) {
+            System.out.println(keyWords.get(i));
+        }
+        
         //sentence
         for (int i = 1; i < al.size(); i+=2) {
             boolean containTerm = false;
@@ -175,7 +184,9 @@ public class BackEnd {
             for (int j = 0; j < array[i].length; j++) {
                 //keywords
                 for (int k = 0; k < keyWords.size(); k++) {
+                    System.out.println(array[i][j]+" ??? "+keyWords.get(k));
                     if(array[i][j].equalsIgnoreCase((String) keyWords.get(k))){
+                        System.out.println("+1");
                         word_freq_t[i]++;
                         containTerm = true;
                         break;
@@ -228,7 +239,9 @@ public class BackEnd {
                 }
                 
             }
+            System.out.println("tf = "+word_freq_t[i]+" / "+total_word_sentence[i]);
             tf[i] = word_freq_t[i] / total_word_sentence[i];
+            System.out.println("no:"+i+" = "+tf[i]+" * "+idf+1);
             tf[i] = tf[i] * (idf+1);
             tf[i] += Notbonus;
             if(tf[i] > max){
@@ -242,11 +255,8 @@ public class BackEnd {
         
         String finalreply = "";
         ArrayList <Integer>sameArray = new ArrayList<>();
-        //threshold ?
         double threshold = 0.1;
-        System.out.println(max < threshold);
         if(max == Double.NaN || (max < threshold)){
-            System.out.println("sad case");
             finalreply = "Sry, YKChatbot don't understand.";
         }
         else{
@@ -260,10 +270,15 @@ public class BackEnd {
                 }
                 String final2reply= "";
                 for (int i = 0; i < sameArray.size(); i++) {
+                    System.out.println("111111111111111111111111111111");
                     final2reply += BreakComponent(keyWords,wH,temp[sameArray.get(i)],temp[sameArray.get(i)+1]).trim();
                     if(i <sameArray.size()-1){
                         final2reply += " and ";
                     }
+                }
+                System.out.println("final2reply: "+final2reply);
+                if(final2reply.length()<1){
+                    final2reply = "Sry, YKChatbot don't understand.";
                 }
                 finalreply = final2reply;
                
@@ -271,6 +286,9 @@ public class BackEnd {
             catch(Exception e){
                 finalreply = "Sry, YKChatbot don't understand.";
             }
+            
+            System.out.println("zzzzzzzzzzzzzzzzzzzzzzzz");
+        
             
 
         }
@@ -452,6 +470,7 @@ public class BackEnd {
     }
 
     private String BreakComponent(ArrayList keyWords,String wH, String reply,String processReply) throws FileNotFoundException {
+        System.out.println("breakkkkkk");
         String finalReply = "";
         String who = "";
         String what = "";
@@ -462,6 +481,8 @@ public class BackEnd {
         for (int i = 0; i < keyWords.size(); i++) {
             System.out.println(keyWords.get(i));
         }
+        
+        
         String words[] = processReply.split(" ");
         String Showwords[] = reply.split(" ");
         int verbAtLocation = checkVerb(words);
@@ -483,6 +504,33 @@ public class BackEnd {
 //            System.out.println("words: "+words[i]);
             what += Showwords[i]+" ";
         }
+        int count = 0;
+        boolean noWrong = true;
+        if(wH == ""){
+            System.out.println("fffffffffffffffffffffffff");
+            for (int i = 0; i < keyWords.size(); i++) {
+                for (int j = 0; j < words.length; j++) {
+                    System.out.println(keyWords.get(i)+" commmm "+words[j]);
+                    if(keyWords.get(i).equals(words[j])){
+                        System.out.println("correct");
+                        count++;
+                        break;
+                    }
+                    else{
+                        noWrong = false;
+                    }
+                }
+            }
+            String re2ply = "false";
+            if(count == keyWords.size() || noWrong == true){
+                re2ply = "true";
+            }
+            else{
+                re2ply = "false";
+            }
+            return re2ply;
+            }
+        
         if(wH.equalsIgnoreCase("who")){
             System.out.println("WHooooooo");
             finalReply = who;
